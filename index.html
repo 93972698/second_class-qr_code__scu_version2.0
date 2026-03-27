@@ -1,61 +1,45 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <title>SCU 二课助手</title>
+  <title>SCU QR Assistant</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #f2f2f7;
-      --bg2: #ffffff;
-      --card: rgba(255,255,255,0.65);
-      --card-solid: #ffffff;
-      --card-border: rgba(0,0,0,0.04);
-      --card-hover: rgba(255,255,255,0.85);
-      --text: #1d1d1f;
-      --text2: #86868b;
-      --text3: #aeaeb2;
-      --accent: #0071e3;
-      --accent2: #147ce5;
-      --accent-bg: rgba(0,113,227,0.08);
-      --danger: #ff3b30;
-      --danger-bg: rgba(255,59,48,0.08);
-      --success: #30d158;
-      --success-bg: rgba(48,209,88,0.08);
-      --warning: #ff9f0a;
-      --purple: #bf5af2;
-      --radius: 20px;
-      --radius-sm: 14px;
-      --radius-xs: 10px;
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
-      --shadow: 0 4px 24px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-      --shadow-lg: 0 20px 60px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
-      --shadow-glow: 0 0 40px rgba(0,113,227,0.12);
-      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
-      --transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    }
-    [data-theme="dark"] {
-      --bg: #000000;
-      --bg2: #1c1c1e;
-      --card: rgba(28,28,30,0.65);
-      --card-solid: #1c1c1e;
-      --card-border: rgba(255,255,255,0.06);
-      --card-hover: rgba(44,44,46,0.8);
-      --text: #f5f5f7;
-      --text2: #98989d;
-      --text3: #636366;
-      --accent-bg: rgba(0,113,227,0.15);
-      --danger-bg: rgba(255,59,48,0.15);
-      --success-bg: rgba(48,209,88,0.15);
-      --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
-      --shadow: 0 4px 24px rgba(0,0,0,0.2);
-      --shadow-lg: 0 20px 60px rgba(0,0,0,0.3);
-      --shadow-glow: 0 0 40px rgba(0,113,227,0.2);
+      --bg:           #000000;
+      --bg2:          #0f0f0f;
+      --card:         rgba(255,255,255,0.05);
+      --card-solid:   #1c1c1e;
+      --card-border:  rgba(255,255,255,0.10);
+      --card-hover:   rgba(255,255,255,0.08);
+      --text:         #f5f5f7;
+      --text2:        #c7c7cc;
+      --text3:        #6c6c70;
+      --accent:       #0a84ff;
+      --accent-dim:   rgba(10,132,255,0.14);
+      --accent-glow:  rgba(10,132,255,0.28);
+      --danger:       #ff453a;
+      --danger-dim:   rgba(255,69,58,0.13);
+      --success:      #30d158;
+      --success-dim:  rgba(48,209,88,0.13);
+      --warning:      #ffd60a;
+      --warning-dim:  rgba(255,214,10,0.10);
+      --purple:       #bf5af2;
+      --radius:       18px;
+      --radius-sm:    13px;
+      --radius-xs:    9px;
+      --shadow:       0 1px 0 rgba(255,255,255,0.05) inset, 0 8px 32px rgba(0,0,0,0.5);
+      --shadow-lg:    0 24px 64px rgba(0,0,0,0.7);
+      --shadow-glow:  0 0 0 3px rgba(10,132,255,0.35);
+      --font:         'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
+      --ease:         cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --spring:       cubic-bezier(0.16, 1, 0.3, 1);
+      --dur:          0.28s;
     }
 
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -65,1032 +49,574 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
-      transition: background var(--transition), color var(--transition);
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       user-select: none;
       -webkit-user-select: none;
       overflow-x: hidden;
+      letter-spacing: -0.015em;
     }
 
-    /* Ambient background */
-    .ambient {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
-    .ambient-orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.15;
-      animation: orbFloat 20s ease-in-out infinite;
-    }
-    [data-theme="dark"] .ambient-orb { opacity: 0.08; }
-    .ambient-orb:nth-child(1) {
-      width: 500px; height: 500px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      top: -10%; left: -5%;
-      animation-delay: 0s;
-    }
-    .ambient-orb:nth-child(2) {
-      width: 400px; height: 400px;
-      background: linear-gradient(135deg, #f093fb, #f5576c);
-      top: 50%; right: -10%;
-      animation-delay: -7s;
-    }
-    .ambient-orb:nth-child(3) {
-      width: 350px; height: 350px;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
-      bottom: -5%; left: 30%;
-      animation-delay: -14s;
-    }
-    @keyframes orbFloat {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      33% { transform: translate(30px, -40px) scale(1.05); }
-      66% { transform: translate(-20px, 20px) scale(0.95); }
+    /* ── Ambient ── */
+    .ambient { position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden; }
+    .orb { position:absolute; border-radius:50%; filter:blur(120px); opacity:0.16; animation:drift 30s ease-in-out infinite; }
+    .orb-1 { width:700px; height:700px; background:radial-gradient(circle,#1a1aff,#6600cc); top:-20%; left:-15%; }
+    .orb-2 { width:500px; height:500px; background:radial-gradient(circle,#ff2d55,#ff6b00); top:40%; right:-15%; animation-delay:-10s; }
+    .orb-3 { width:600px; height:600px; background:radial-gradient(circle,#00c7ff,#0040ff); bottom:-20%; left:20%; animation-delay:-20s; }
+    @keyframes drift {
+      0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(40px,-60px) scale(1.06)} 66%{transform:translate(-30px,30px) scale(0.94)}
     }
 
-    /* Noise texture overlay */
-    .noise {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      pointer-events: none;
-      z-index: 0;
-      opacity: 0.02;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-      background-repeat: repeat;
+    .grain {
+      position:fixed; inset:0; pointer-events:none; z-index:1; opacity:0.03;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
-    .container {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 16px 20px 40px;
-      position: relative;
-      z-index: 1;
-    }
+    .container { max-width:660px; margin:0 auto; padding:24px 24px 60px; position:relative; z-index:2; }
 
-    /* ===== Header ===== */
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 0 20px;
+    /* ── Header ── */
+    .header { display:flex; align-items:center; justify-content:space-between; padding:4px 0 32px; }
+    .header-brand { display:flex; align-items:center; gap:13px; }
+    .brand-mark {
+      width:40px; height:40px; border-radius:12px;
+      background:linear-gradient(145deg,#1c1c1e,#2c2c2e);
+      border:1px solid rgba(255,255,255,0.12);
+      display:flex; align-items:center; justify-content:center; font-size:18px;
+      box-shadow:0 2px 12px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04) inset;
     }
-    .header-left { display: flex; align-items: center; gap: 12px; }
-    .header-logo {
-      width: 42px; height: 42px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-      box-shadow: 0 4px 16px rgba(99,102,241,0.3);
-      animation: logoPulse 3s ease-in-out infinite;
+    .brand-text h1 {
+      font-size:18px; font-weight:700; letter-spacing:-0.5px; line-height:1.2;
+      background:linear-gradient(135deg,#f5f5f7 40%,#aeaeb2);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
     }
-    @keyframes logoPulse {
-      0%, 100% { box-shadow: 0 4px 16px rgba(99,102,241,0.3); }
-      50% { box-shadow: 0 4px 24px rgba(99,102,241,0.45); }
-    }
-    .header-text h1 {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.3px;
-      line-height: 1.2;
-    }
-    .header-text span {
-      font-size: 12px;
-      color: var(--text2);
-      font-weight: 500;
-    }
-    .header-actions { display: flex; gap: 8px; }
-    .icon-btn {
-      width: 38px; height: 38px;
-      border-radius: 12px;
-      border: 1px solid var(--card-border);
-      background: var(--card);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      color: var(--text);
-      font-size: 16px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all var(--transition);
-      box-shadow: var(--shadow-sm);
-    }
-    .icon-btn:hover { background: var(--card-hover); transform: translateY(-1px); box-shadow: var(--shadow); }
-    .icon-btn:active { transform: scale(0.95); }
+    .brand-text span { font-size:11px; color:#6c6c70; font-weight:500; letter-spacing:0.02em; }
 
-    /* ===== Cards ===== */
+    /* ── Card ── */
     .card {
-      background: var(--card);
-      backdrop-filter: blur(40px) saturate(180%);
-      -webkit-backdrop-filter: blur(40px) saturate(180%);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius);
-      padding: 24px;
-      margin-bottom: 14px;
-      box-shadow: var(--shadow);
-      transition: all var(--transition);
-      position: relative;
-      overflow: hidden;
+      background:var(--card);
+      border:1px solid var(--card-border);
+      border-radius:var(--radius);
+      padding:22px; margin-bottom:10px;
+      box-shadow:var(--shadow);
+      position:relative; overflow:hidden;
+      transition:border-color var(--dur) var(--ease);
     }
     .card::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-    }
-    [data-theme="dark"] .card::before {
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
-    }
-    .card-title {
-      font-size: 15px;
-      font-weight: 700;
-      margin-bottom: 10px;
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .card-title .icon {
-      width: 28px; height: 28px;
-      border-radius: 8px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-    }
-    .card-desc {
-      font-size: 13px;
-      color: var(--text2);
-      line-height: 1.8;
-    }
-    .card-desc code {
-      font-size: 11px;
-      color: var(--accent);
-      background: var(--accent-bg);
-      padding: 2px 6px;
-      border-radius: 5px;
-      word-break: break-all;
-      font-family: 'SF Mono', 'Fira Code', monospace;
+      content:''; position:absolute; top:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);
     }
 
-    /* ===== Collapsible instructions ===== */
-    .collapse-toggle {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-      padding: 0;
-      width: 100%;
+    /* ── Section label ── */
+    .section-label {
+      font-size:11px; font-weight:600; text-transform:uppercase;
+      letter-spacing:0.08em; color:#8e8e93; margin-bottom:14px;
+      display:flex; align-items:center; gap:8px;
     }
-    .collapse-toggle .arrow {
-      transition: transform var(--transition);
-      font-size: 12px;
-      color: var(--text3);
-    }
-    .collapse-toggle.open .arrow { transform: rotate(180deg); }
-    .collapse-body {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s;
-      opacity: 0;
-    }
-    .collapse-body.open { max-height: 300px; opacity: 1; }
+    .section-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,0.08); }
 
-    /* ===== Inputs ===== */
-    .input-wrap {
-      position: relative;
-      margin-top: 4px;
+    /* ── Collapse ── */
+    .collapse-toggle { display:flex; align-items:center; justify-content:space-between; cursor:pointer; width:100%; }
+    .chevron {
+      width:20px; height:20px; border-radius:6px;
+      background:rgba(255,255,255,0.07);
+      display:flex; align-items:center; justify-content:center;
+      font-size:10px; color:#8e8e93;
+      transition:transform var(--dur) var(--ease), background var(--dur);
     }
-    .input-wrap .floating-label {
-      position: absolute;
-      top: 14px; left: 16px;
-      font-size: 14px;
-      color: var(--text3);
-      pointer-events: none;
-      transition: all 0.2s ease;
-      font-weight: 500;
+    .collapse-toggle.open .chevron { transform:rotate(180deg); background:var(--accent-dim); color:var(--accent); }
+    .collapse-body { max-height:0; overflow:hidden; transition:max-height 0.4s var(--spring),opacity 0.3s; opacity:0; }
+    .collapse-body.open { max-height:400px; opacity:1; }
+
+    .step-list { list-style:none; margin-top:16px; display:flex; flex-direction:column; gap:10px; }
+    .step-list li { display:flex; align-items:flex-start; gap:12px; font-size:13.5px; color:#c7c7cc; line-height:1.65; }
+    .step-num {
+      flex-shrink:0; width:22px; height:22px; border-radius:7px;
+      background:var(--accent-dim); color:var(--accent);
+      font-size:11px; font-weight:700;
+      display:flex; align-items:center; justify-content:center; margin-top:1px;
     }
+    .step-list strong { color:#f5f5f7; font-weight:600; }
+
+    .activity-link {
+      display:inline-flex; align-items:center; gap:6px;
+      margin-top:14px; padding:9px 14px; border-radius:var(--radius-xs);
+      background:var(--accent-dim); border:1px solid rgba(10,132,255,0.22);
+      color:var(--accent); font-size:12.5px; font-weight:600;
+      text-decoration:none; letter-spacing:-0.01em;
+      transition:all var(--dur) var(--ease);
+    }
+    .activity-link:hover { background:rgba(10,132,255,0.22); border-color:rgba(10,132,255,0.45); transform:translateY(-1px); }
+
+    .notice {
+      display:flex; align-items:center; gap:8px;
+      margin-top:12px; padding:9px 12px; border-radius:var(--radius-xs);
+      background:var(--warning-dim); border:1px solid rgba(255,214,10,0.18);
+      font-size:12.5px; color:#ffd60a; font-weight:500; line-height:1.5;
+    }
+
+    /* ── Textarea ── */
     textarea {
-      width: 100%;
-      padding: 18px 16px 14px;
-      border: 1.5px solid var(--card-border);
-      border-radius: var(--radius-sm);
-      background: var(--bg);
-      color: var(--text);
-      font-size: 14px;
-      font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-      outline: none;
-      transition: all var(--transition);
-      resize: none;
-      min-height: 130px;
-      line-height: 1.7;
+      width:100%; padding:14px 16px; border:1px solid var(--card-border);
+      border-radius:var(--radius-sm); background:rgba(255,255,255,0.04);
+      color:#f5f5f7; font-size:12.5px;
+      font-family:'SF Mono','Fira Code','Cascadia Code',monospace;
+      outline:none; resize:none; min-height:110px; line-height:1.9;
+      transition:border-color var(--dur), box-shadow var(--dur);
     }
-    textarea:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 4px var(--accent-bg), var(--shadow-glow);
-    }
-    textarea:not(:placeholder-shown) + .floating-label,
-    textarea:focus + .floating-label {
-      top: -8px; left: 12px;
-      font-size: 11px;
-      color: var(--accent);
-      background: var(--bg);
-      padding: 0 6px;
-      border-radius: 4px;
-    }
+    textarea::placeholder { color:#6c6c70; font-family:var(--font); font-size:13px; }
+    textarea:focus { border-color:var(--accent); box-shadow:var(--shadow-glow); }
+
+    /* ── Password ── */
     input[type="password"] {
-      width: 100%;
-      padding: 14px 18px;
-      border: 1.5px solid var(--card-border);
-      border-radius: var(--radius-sm);
-      background: var(--bg);
-      color: var(--text);
-      font-size: 16px;
-      font-family: var(--font);
-      outline: none;
-      transition: all var(--transition);
-      text-align: center;
-      letter-spacing: 4px;
-      font-weight: 600;
+      width:100%; padding:15px 20px; border:1px solid var(--card-border);
+      border-radius:var(--radius-sm); background:rgba(255,255,255,0.05);
+      color:#f5f5f7; font-size:20px; font-family:var(--font); outline:none;
+      text-align:center; letter-spacing:8px; font-weight:600;
+      transition:border-color var(--dur), box-shadow var(--dur);
     }
-    input[type="password"]:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 4px var(--accent-bg), var(--shadow-glow);
-    }
+    input[type="password"]::placeholder { letter-spacing:5px; font-size:16px; color:#6c6c70; }
+    input[type="password"]:focus { border-color:var(--accent); box-shadow:var(--shadow-glow); }
 
-    /* ===== Buttons ===== */
+    /* ── Buttons ── */
     .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      padding: 12px 22px;
-      border: none;
-      border-radius: var(--radius-sm);
-      font-size: 14px;
-      font-weight: 650;
-      font-family: var(--font);
-      cursor: pointer;
-      transition: all var(--transition);
-      position: relative;
-      overflow: hidden;
-      letter-spacing: -0.1px;
+      display:inline-flex; align-items:center; justify-content:center; gap:6px;
+      padding:10px 20px; border:none; border-radius:980px;
+      font-size:13.5px; font-weight:600; font-family:var(--font);
+      cursor:pointer; transition:all var(--dur) var(--ease); letter-spacing:-0.01em;
     }
-    .btn::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at var(--x,50%) var(--y,50%), rgba(255,255,255,0.2) 0%, transparent 60%);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .btn:hover::after { opacity: 1; }
-    .btn:active { transform: scale(0.97); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn:active { transform:scale(0.96); }
+    .btn:disabled { opacity:0.35; cursor:not-allowed; transform:none; }
+    .btn-primary { background:var(--accent); color:#fff; box-shadow:0 0 20px rgba(10,132,255,0.3); }
+    .btn-primary:hover { background:#1a8fff; box-shadow:0 0 28px rgba(10,132,255,0.45); }
+    .btn-ghost { background:rgba(255,255,255,0.08); color:#c7c7cc; border:1px solid rgba(255,255,255,0.12); }
+    .btn-ghost:hover { background:rgba(255,255,255,0.13); color:#f5f5f7; }
+    .btn-green { background:var(--success); color:#000; box-shadow:0 0 20px rgba(48,209,88,0.25); }
+    .btn-green:hover { filter:brightness(1.1); box-shadow:0 0 28px rgba(48,209,88,0.4); }
+    .btn-group { display:flex; gap:8px; margin-top:16px; flex-wrap:wrap; }
 
-    .btn-primary {
-      background: linear-gradient(135deg, #0071e3, #0077ED);
-      color: #fff;
-      box-shadow: 0 2px 12px rgba(0,113,227,0.25);
-    }
-    .btn-primary:hover { box-shadow: 0 4px 20px rgba(0,113,227,0.35); transform: translateY(-1px); }
-
-    .btn-secondary {
-      background: var(--bg);
-      color: var(--text2);
-      border: 1.5px solid var(--card-border);
-    }
-    .btn-secondary:hover { background: var(--card-hover); color: var(--text); }
-
-    .btn-success {
-      background: linear-gradient(135deg, #28cd41, #30d158);
-      color: #fff;
-      box-shadow: 0 2px 12px rgba(48,209,88,0.25);
-    }
-    .btn-success:hover { box-shadow: 0 4px 20px rgba(48,209,88,0.35); transform: translateY(-1px); }
-
-    .btn-group {
-      display: flex;
-      gap: 10px;
-      margin-top: 16px;
-      flex-wrap: wrap;
-    }
-
-    /* ===== Error ===== */
+    /* ── Error ── */
     .error-msg {
-      font-size: 13px;
-      margin-top: 10px;
-      display: none;
-      font-weight: 500;
-      padding: 10px 14px;
-      border-radius: var(--radius-xs);
-      background: var(--danger-bg);
-      color: var(--danger);
-      animation: shake 0.4s ease;
+      font-size:13px; margin-top:10px; display:none; font-weight:500;
+      padding:10px 14px; border-radius:var(--radius-xs);
+      background:var(--danger-dim); color:#ff6b63;
+      animation:shake 0.35s ease; border:1px solid rgba(255,69,58,0.22);
     }
-    .error-msg.show { display: flex; align-items: center; gap: 6px; }
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-6px); }
-      75% { transform: translateX(6px); }
-    }
+    .error-msg.show { display:flex; align-items:center; gap:6px; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
 
-    /* ===== Toast ===== */
+    /* ── Toast ── */
     .toast {
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%) translateY(-120px);
-      background: var(--card-solid);
-      backdrop-filter: blur(40px);
-      -webkit-backdrop-filter: blur(40px);
-      border: 1px solid var(--card-border);
-      padding: 12px 22px;
-      border-radius: 16px;
-      font-size: 14px;
-      font-weight: 600;
-      box-shadow: var(--shadow-lg);
-      z-index: 9999;
-      transition: transform 0.5s cubic-bezier(0.16,1,0.3,1);
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      position:fixed; top:24px; left:50%;
+      transform:translateX(-50%) translateY(-140px);
+      background:rgba(28,28,30,0.96);
+      backdrop-filter:blur(40px) saturate(180%);
+      -webkit-backdrop-filter:blur(40px) saturate(180%);
+      border:1px solid rgba(255,255,255,0.12);
+      padding:10px 20px; border-radius:980px;
+      font-size:13px; font-weight:600; color:#f5f5f7;
+      box-shadow:var(--shadow-lg); z-index:9999;
+      transition:transform 0.5s var(--spring);
+      display:flex; align-items:center; gap:8px; white-space:nowrap;
     }
-    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.show { transform:translateX(-50%) translateY(0); }
 
-    /* ===== Progress ===== */
-    .progress-bar {
-      width: 100%;
-      height: 4px;
-      background: var(--card-border);
-      border-radius: 2px;
-      overflow: hidden;
-      margin-top: 14px;
-      display: none;
-    }
-    .progress-bar.show { display: block; }
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), var(--purple));
-      border-radius: 2px;
-      width: 0%;
-      transition: width 0.3s ease;
-      position: relative;
-    }
-    .progress-fill::after {
-      content: '';
-      position: absolute;
-      right: 0; top: 0; bottom: 0;
-      width: 20px;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4));
-      border-radius: 2px;
-    }
+    /* ── Progress ── */
+    .progress-bar { width:100%; height:2px; background:rgba(255,255,255,0.08); border-radius:1px; overflow:hidden; margin-top:14px; display:none; }
+    .progress-bar.show { display:block; }
+    .progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--purple)); border-radius:1px; width:0%; transition:width 0.25s ease; }
 
-    /* ===== Stats ===== */
-    .stats {
-      display: flex;
-      gap: 8px;
-      margin-top: 14px;
-      flex-wrap: wrap;
+    /* ── Stats ── */
+    .stats { display:flex; gap:8px; margin-top:14px; flex-wrap:wrap; }
+    .stat-pill {
+      padding:4px 12px; border-radius:980px; font-size:12px; font-weight:600;
+      display:inline-flex; align-items:center; gap:5px; border:1px solid transparent;
     }
-    .stat-chip {
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .stat-chip.blue { background: var(--accent-bg); color: var(--accent); }
-    .stat-chip.green { background: var(--success-bg); color: var(--success); }
+    .stat-pill.blue { background:var(--accent-dim); color:#4da6ff; border-color:rgba(10,132,255,0.22); }
+    .stat-pill.green { background:var(--success-dim); color:#4cd964; border-color:rgba(48,209,88,0.22); }
 
-    /* ===== QR Grid ===== */
-    .qr-section {
-      animation: cardIn 0.5s cubic-bezier(0.16,1,0.3,1) both;
+    /* ── QR output ── */
+    .qr-section { animation:rise 0.5s var(--spring) both; }
+    @keyframes rise { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:none} }
+
+    .activity-header { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+    .act-badge {
+      width:34px; height:34px; border-radius:10px; flex-shrink:0;
+      background:linear-gradient(135deg,#6366f1,#8b5cf6);
+      color:#fff; font-size:13px; font-weight:800;
+      display:flex; align-items:center; justify-content:center;
+      box-shadow:0 4px 12px rgba(99,102,241,0.3);
     }
-    @keyframes cardIn {
-      from { opacity: 0; transform: translateY(20px) scale(0.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    .qr-section .section-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    .section-badge {
-      width: 32px; height: 32px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      color: #fff;
-      font-size: 14px;
-      font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 2px 8px rgba(99,102,241,0.3);
-    }
-    .section-info { flex: 1; }
-    .section-info h3 { font-size: 15px; font-weight: 700; }
-    .section-info span {
-      font-size: 11px;
-      color: var(--text3);
-      font-family: 'SF Mono', monospace;
-    }
-    .qr-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
+    .act-info h3 { font-size:14px; font-weight:700; letter-spacing:-0.2px; color:#f5f5f7; }
+    .act-info span { font-size:11px; color:#6c6c70; font-family:'SF Mono',monospace; }
+
+    .qr-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
     .qr-item {
-      background: var(--bg);
-      border: 1px solid var(--card-border);
-      border-radius: var(--radius-sm);
-      padding: 16px 12px;
-      text-align: center;
-      transition: all var(--transition);
-      animation: qrPop 0.4s cubic-bezier(0.16,1,0.3,1) both;
-      position: relative;
-      overflow: hidden;
+      background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.09);
+      border-radius:var(--radius-sm); padding:18px 14px; text-align:center;
+      transition:all var(--dur) var(--ease);
+      animation:pop 0.4s var(--spring) both;
     }
-    .qr-item:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow);
-      border-color: transparent;
-    }
-    @keyframes qrPop {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    .qr-type-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-    }
-    .qr-type-badge.in { background: var(--success-bg); color: var(--success); }
-    .qr-type-badge.out { background: var(--danger-bg); color: var(--danger); }
-    .qr-type-badge .dot {
-      width: 6px; height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-      animation: dotPulse 2s ease-in-out infinite;
-    }
-    @keyframes dotPulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-    .qr-canvas-wrap {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 12px;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-    .qr-canvas-wrap canvas { display: block; border-radius: 10px; }
-    .qr-dl-btn {
-      padding: 7px 16px;
-      border: 1.5px solid var(--card-border);
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      background: transparent;
-      color: var(--text2);
-      transition: all var(--transition);
-      font-family: var(--font);
-    }
-    .qr-dl-btn:hover {
-      color: var(--accent);
-      border-color: var(--accent);
-      background: var(--accent-bg);
-    }
+    .qr-item:hover { background:rgba(255,255,255,0.07); transform:translateY(-2px); border-color:rgba(255,255,255,0.14); }
+    @keyframes pop { from{opacity:0;transform:scale(0.93)} to{opacity:1;transform:none} }
 
-    /* ===== Login ===== */
+    .type-badge {
+      display:inline-flex; align-items:center; gap:5px;
+      padding:3px 11px; border-radius:980px;
+      font-size:10.5px; font-weight:700; letter-spacing:0.05em;
+      text-transform:uppercase; margin-bottom:14px; border:1px solid transparent;
+    }
+    .type-badge.in  { background:var(--success-dim); color:#4cd964; border-color:rgba(48,209,88,0.22); }
+    .type-badge.out { background:var(--danger-dim);  color:#ff6b63; border-color:rgba(255,69,58,0.22); }
+    .type-badge .pulse { width:5px; height:5px; border-radius:50%; background:currentColor; animation:pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    .qr-canvas-wrap { display:flex; justify-content:center; margin-bottom:14px; }
+    .qr-canvas-wrap canvas { display:block; border-radius:10px; }
+
+    .save-btn {
+      padding:6px 16px; border-radius:980px; border:1px solid rgba(255,255,255,0.12);
+      font-size:12px; font-weight:600; cursor:pointer;
+      background:transparent; color:#c7c7cc;
+      transition:all var(--dur) var(--ease); font-family:var(--font);
+    }
+    .save-btn:hover { color:var(--accent); border-color:rgba(10,132,255,0.4); background:var(--accent-dim); }
+
+    /* ── Login ── */
     #login-screen {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 20px;
-      position: relative;
-      z-index: 1;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      min-height:100vh; padding:24px; position:relative; z-index:2;
     }
-    .login-card {
-      width: 100%;
-      max-width: 380px;
-      text-align: center;
-    }
+    .login-wrap { width:100%; max-width:340px; text-align:center; }
     .login-icon {
-      width: 72px; height: 72px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6, #a855f7);
-      border-radius: 22px;
-      display: flex; align-items: center; justify-content: center;
-      margin: 0 auto 24px;
-      font-size: 32px;
-      color: #fff;
-      box-shadow: 0 8px 32px rgba(99,102,241,0.35);
-      animation: loginFloat 3s ease-in-out infinite;
+      width:76px; height:76px; border-radius:22px;
+      background:linear-gradient(145deg,#1c1c1e,#2c2c2e);
+      border:1px solid rgba(255,255,255,0.12);
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto 28px; font-size:34px;
+      box-shadow:0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05) inset;
+      animation:float 4s ease-in-out infinite;
     }
-    @keyframes loginFloat {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-6px); }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+    .login-wrap h1 {
+      font-size:26px; font-weight:800; letter-spacing:-0.6px; margin-bottom:6px;
+      background:linear-gradient(135deg,#f5f5f7 40%,#aeaeb2);
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
     }
-    .login-card h1 {
-      font-size: 26px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      margin-bottom: 6px;
-    }
-    .login-card .subtitle {
-      font-size: 14px;
-      color: var(--text2);
-      margin-bottom: 28px;
-      font-weight: 500;
-    }
+    .login-wrap p { font-size:14px; color:#aeaeb2; margin-bottom:28px; font-weight:400; }
 
-    #main-screen { display: none; position: relative; z-index: 1; }
+    #main-screen { display:none; position:relative; z-index:2; }
 
-    /* ===== Responsive ===== */
-    @media (max-width: 500px) {
-      .container { padding: 12px 16px 32px; }
-      .header h1 { font-size: 18px; }
-      .card { padding: 18px; border-radius: 16px; }
-      .qr-grid { gap: 8px; }
-      .qr-item { padding: 12px 8px; }
-      .btn { padding: 11px 18px; font-size: 13px; }
-    }
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:#3a3a3c; border-radius:2px; }
 
-    /* ===== Scrollbar ===== */
-    ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--text3); border-radius: 3px; }
+    .skeleton { background:linear-gradient(90deg,rgba(255,255,255,0.06) 25%,rgba(255,255,255,0.1) 50%,rgba(255,255,255,0.06) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; border-radius:6px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
-    /* ===== Skeleton ===== */
-    .skeleton {
-      background: linear-gradient(90deg, var(--card-border) 25%, var(--bg) 50%, var(--card-border) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: 8px;
-    }
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    /* Divider */
-    .divider {
-      height: 1px;
-      background: var(--card-border);
-      margin: 14px 0;
-    }
-
-    /* Tip */
-    .tip {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      padding: 12px 14px;
-      border-radius: var(--radius-xs);
-      background: rgba(255,159,10,0.08);
-      font-size: 12px;
-      color: var(--warning);
-      font-weight: 500;
-      line-height: 1.5;
-      margin-top: 12px;
+    @media (max-width:500px) {
+      .container{padding:16px 16px 48px;}
+      .qr-grid{gap:8px;} .qr-item{padding:14px 10px;}
+      .btn{padding:9px 16px;font-size:13px;}
     }
   </style>
 </head>
 <body oncontextmenu="return false;">
-  <!-- Ambient BG -->
   <div class="ambient">
-    <div class="ambient-orb"></div>
-    <div class="ambient-orb"></div>
-    <div class="ambient-orb"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
   </div>
-  <div class="noise"></div>
-
-  <!-- Toast -->
+  <div class="grain"></div>
   <div class="toast" id="toast"></div>
 
-  <!-- Login -->
+  <!-- ══ Login ══ -->
   <div id="login-screen">
-    <div class="login-card card" style="padding:36px 28px;">
+    <div class="login-wrap card" style="padding:40px 30px;">
       <div class="login-icon">🎓</div>
-      <h1>SCU 二课助手</h1>
-      <p class="subtitle">请输入访问密码以继续</p>
+      <h1>QR Assistant</h1>
+      <p>Enter your passcode to continue</p>
       <input type="password" id="pwd-input" placeholder="· · · · · ·" autocomplete="off">
-      <div class="error-msg" id="pwd-error">⚠️ 密码错误，请重新输入</div>
-      <div class="btn-group" style="justify-content:center;">
-        <button class="btn btn-primary" id="pwd-btn" style="width:100%;padding:14px;">解锁</button>
+      <div class="error-msg" id="pwd-error">Incorrect passcode. Please try again.</div>
+      <div class="btn-group" style="justify-content:center;margin-top:18px;">
+        <button class="btn btn-primary" id="pwd-btn" style="width:100%;padding:14px;font-size:15px;">Unlock</button>
       </div>
     </div>
   </div>
 
-  <!-- Main -->
+  <!-- ══ Main ══ -->
   <div id="main-screen">
     <div class="container">
-      <!-- Header -->
       <div class="header">
-        <div class="header-left">
-          <div class="header-logo">🎓</div>
-          <div class="header-text">
-            <h1>二课助手</h1>
-            <span>SCU QR Code Generator</span>
+        <div class="header-brand">
+          <div class="brand-mark">🎓</div>
+          <div class="brand-text">
+            <h1>QR Assistant</h1>
+            <span>SCU · Batch Generator</span>
           </div>
-        </div>
-        <div class="header-actions">
-          <button class="icon-btn" id="theme-btn" title="切换主题">🌙</button>
         </div>
       </div>
 
-      <!-- Instructions (collapsible) -->
+      <!-- How it works -->
       <div class="card">
         <div class="collapse-toggle" id="instr-toggle" onclick="toggleCollapse()">
-          <div class="card-title" style="margin:0;">
-            <span class="icon" style="background:var(--accent-bg);">📖</span>
-            使用说明
-          </div>
-          <span class="arrow">▼</span>
+          <div class="section-label" style="margin:0;">How it works</div>
+          <div class="chevron">▾</div>
         </div>
         <div class="collapse-body" id="instr-body">
-          <div class="divider"></div>
-          <div class="card-desc">
-            <strong>① </strong> 在下方输入框中粘贴二课报名URL，<strong>每行一个</strong>，支持批量导入<br>
-            <strong>② </strong> URL 示例：<code>https://zjczs.scu.edu.cn/...?id=252da0ea...</code><br>
-            <strong>③ </strong> 点击「生成二维码」自动批量生成签到 / 签退码<br>
-            <strong>④ </strong> 支持单个下载或一键打包下载全部二维码
+          <ul class="step-list">
+            <li><span class="step-num">1</span>Paste one or more activity URLs below, one per line.</li>
+            <li><span class="step-num">2</span>Click <strong>Generate</strong> — check-in &amp; check-out QR codes are created automatically.</li>
+            <li><span class="step-num">3</span>Save individually or export everything as a ZIP archive.</li>
+          </ul>
+          <a class="activity-link" href="https://dekt.scu.edu.cn/ccylmp/pages/main/activity/activity" target="_blank" rel="noopener">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Browse Activities on SCU Platform
+          </a>
+          <div class="notice">
+            <span>⚠</span> For personal use only — do not share or redistribute.
           </div>
-          <div class="tip">⚠️ 本工具仅供个人使用，禁止分享传播</div>
         </div>
       </div>
 
-      <!-- Input -->
+      <!-- Generator -->
       <div class="card">
-        <div class="card-title">
-          <span class="icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-size:13px;">⚡</span>
-          批量生成
-        </div>
-        <div class="input-wrap">
-          <textarea id="url-input" placeholder=" "></textarea>
-          <label class="floating-label">粘贴 URL（每行一个）</label>
-        </div>
+        <div class="section-label">Batch Generate</div>
+        <textarea id="url-input" placeholder="Paste activity URLs here, one per line…"></textarea>
         <div class="error-msg" id="url-error"></div>
         <div class="progress-bar" id="progress"><div class="progress-fill" id="progress-fill"></div></div>
         <div class="btn-group">
           <button class="btn btn-primary" id="gen-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM17 14v3m0 3v0m0 0h0"/></svg>
-            生成二维码
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 17h3m4 0h-1m-3 3v-3m0-4v1"/></svg>
+            Generate
           </button>
-          <button class="btn btn-secondary" id="clear-btn">清空</button>
-          <button class="btn btn-success" id="dl-all-btn" style="display:none;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-            打包下载
+          <button class="btn btn-ghost" id="clear-btn">Clear</button>
+          <button class="btn btn-green" id="dl-all-btn" style="display:none;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Export ZIP
           </button>
         </div>
         <div class="stats" id="stats" style="display:none;">
-          <span class="stat-chip blue" id="stat-total"></span>
-          <span class="stat-chip green" id="stat-qr"></span>
+          <span class="stat-pill blue" id="stat-total"></span>
+          <span class="stat-pill green" id="stat-qr"></span>
         </div>
       </div>
 
-      <!-- QR Output -->
       <div id="qr-output"></div>
     </div>
   </div>
 
   <script>
-    // Devtools block
-    document.onkeydown = function(e) {
-      if (e.keyCode===123||(e.ctrlKey&&e.shiftKey&&e.keyCode===73)||(e.ctrlKey&&e.keyCode===85)) return false;
-    };
+    document.addEventListener('keydown', e => {
+      if (e.keyCode===123||(e.ctrlKey&&e.shiftKey&&[73,74,67].includes(e.keyCode))||(e.ctrlKey&&e.keyCode===85))
+      { e.preventDefault(); e.stopPropagation(); return false; }
+    }, true);
 
-    // Collapse
+    const PWD_HASH = '82745840f1a8601c5ddbd891f31dfd6ee2e8e515d9c7bdb9ea107ddfb633285a';
+    async function sha256(s) {
+      const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+      return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+    }
+
     function toggleCollapse() {
-      const t = document.getElementById('instr-toggle');
-      const b = document.getElementById('instr-body');
-      t.classList.toggle('open');
-      b.classList.toggle('open');
+      document.getElementById('instr-toggle').classList.toggle('open');
+      document.getElementById('instr-body').classList.toggle('open');
     }
 
-    // Theme
-    const themeBtn = document.getElementById('theme-btn');
-    let dark = false;
-    themeBtn.onclick = () => {
-      dark = !dark;
-      document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
-      themeBtn.textContent = dark ? '☀️' : '🌙';
-    };
-
-    // Toast
-    function showToast(msg, dur=2200) {
-      const t = document.getElementById('toast');
-      t.textContent = msg;
-      t.classList.add('show');
-      clearTimeout(t._timer);
-      t._timer = setTimeout(() => t.classList.remove('show'), dur);
+    function toast(msg, dur=2200) {
+      const el = document.getElementById('toast');
+      el.textContent = msg; el.classList.add('show');
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.remove('show'), dur);
     }
 
-    // Password
     const pwdInput = document.getElementById('pwd-input');
-    const pwdBtn = document.getElementById('pwd-btn');
     const pwdError = document.getElementById('pwd-error');
-    function tryLogin() {
-      if (pwdInput.value === 'syywmddzml') {
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('main-screen').style.display = 'block';
-        showToast('✅ 验证成功，欢迎使用');
+    async function tryLogin() {
+      if ((await sha256(pwdInput.value)) === PWD_HASH) {
+        document.getElementById('login-screen').style.display='none';
+        document.getElementById('main-screen').style.display='block';
+        toast('✓  Welcome back');
       } else {
         pwdError.classList.add('show');
-        pwdInput.style.borderColor = 'var(--danger)';
-        setTimeout(() => { pwdError.classList.remove('show'); pwdInput.style.borderColor = ''; }, 2500);
+        pwdInput.style.borderColor='var(--danger)';
+        setTimeout(()=>{ pwdError.classList.remove('show'); pwdInput.style.borderColor=''; },2500);
       }
     }
-    pwdBtn.onclick = tryLogin;
-    pwdInput.addEventListener('keydown', e => { if(e.key==='Enter') tryLogin(); });
+    document.getElementById('pwd-btn').onclick = tryLogin;
+    pwdInput.addEventListener('keydown', e=>{ if(e.key==='Enter') tryLogin(); });
 
-    // Extract ID
+    const HOST = 'dekt.scu.edu.cn';
     function extractId(url) {
       try {
         const u = new URL(url.trim());
-        return new URLSearchParams(u.search).get('id');
+        if (u.hostname !== HOST) return null;
+        const id = new URLSearchParams(u.search).get('id');
+        return id && /^[0-9a-f]{32}$/i.test(id) ? id : null;
       } catch { return null; }
     }
 
-    // Generate labeled QR
-    function createLabeledQR(text, id, number, type) {
+    function makeQR(text, id, num, type) {
       return new Promise(resolve => {
         const tmp = document.createElement('div');
-        tmp.style.cssText = 'position:absolute;left:-9999px;';
+        tmp.style.cssText='position:absolute;left:-9999px;top:0;';
         document.body.appendChild(tmp);
-        new QRCode(tmp, { text, width: 280, height: 280, correctLevel: QRCode.CorrectLevel.M });
-        setTimeout(() => {
-          const srcCanvas = tmp.querySelector('canvas');
-          if (!srcCanvas) { document.body.removeChild(tmp); resolve(null); return; }
-          const W = 340, H = 420;
-          const c = document.createElement('canvas');
-          c.width = W; c.height = H;
-          const ctx = c.getContext('2d');
-
-          // White rounded bg
-          ctx.fillStyle = '#ffffff';
-          roundRect(ctx, 0, 0, W, H, 20);
-          ctx.fill();
-
-          // Top color bar
-          const isIn = type === 'in';
-          const grad = ctx.createLinearGradient(0, 0, W, 0);
-          if (isIn) { grad.addColorStop(0, '#30d158'); grad.addColorStop(1, '#34c759'); }
-          else { grad.addColorStop(0, '#ff3b30'); grad.addColorStop(1, '#ff6961'); }
-          ctx.fillStyle = grad;
-          roundRectTop(ctx, 0, 0, W, 52, 20);
-          ctx.fill();
-
-          // Badge text
-          ctx.fillStyle = '#fff';
-          ctx.font = 'bold 18px Inter, -apple-system, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(`#${number}  ${isIn ? '📥 签到码' : '📤 签退码'}`, W/2, 34);
-
-          // QR code
-          const qrSize = 260;
-          const qrX = (W - qrSize) / 2;
-          ctx.save();
-          roundRect(ctx, qrX, 64, qrSize, qrSize, 12);
-          ctx.clip();
-          ctx.drawImage(srcCanvas, qrX, 64, qrSize, qrSize);
-          ctx.restore();
-
-          // Subtle border around QR
-          ctx.strokeStyle = '#e5e5ea';
-          ctx.lineWidth = 1;
-          roundRect(ctx, qrX, 64, qrSize, qrSize, 12);
-          ctx.stroke();
-
-          // Bottom ID
-          ctx.fillStyle = '#86868b';
-          ctx.font = '500 12px "SF Mono", monospace, Inter';
-          ctx.textAlign = 'center';
-          ctx.fillText(`ID: ${id.slice(0,8)}...${id.slice(-8)}`, W/2, H - 30);
-
-          // Bottom branding
-          ctx.fillStyle = '#c7c7cc';
-          ctx.font = '500 10px Inter, sans-serif';
-          ctx.fillText('SCU 二课助手', W/2, H - 12);
-
-          document.body.removeChild(tmp);
-          resolve(c);
-        }, 180);
+        new QRCode(tmp, {text, width:280, height:280, correctLevel:QRCode.CorrectLevel.M});
+        setTimeout(()=>{
+          const src = tmp.querySelector('canvas');
+          if (!src) { document.body.removeChild(tmp); resolve(null); return; }
+          const W=340, H=420, c=document.createElement('canvas');
+          c.width=W; c.height=H;
+          const ctx=c.getContext('2d');
+          const isIn=type==='in';
+          ctx.fillStyle='#111111';
+          rrect(ctx,0,0,W,H,18); ctx.fill();
+          const g=ctx.createLinearGradient(0,0,W,0);
+          if(isIn){g.addColorStop(0,'#1a7a3a');g.addColorStop(1,'#30d158');}
+          else{g.addColorStop(0,'#7a1a1a');g.addColorStop(1,'#ff453a');}
+          ctx.fillStyle=g;
+          rrectTop(ctx,0,0,W,48,18); ctx.fill();
+          ctx.fillStyle='#ffffff';
+          ctx.font='600 15px Inter,-apple-system,sans-serif';
+          ctx.textAlign='center';
+          ctx.fillText(`#${num}  ${isIn?'CHECK-IN':'CHECK-OUT'}`,W/2,31);
+          ctx.fillStyle='#ffffff';
+          rrect(ctx,30,58,280,280,12); ctx.fill();
+          ctx.save(); rrect(ctx,30,58,280,280,12); ctx.clip();
+          ctx.drawImage(src,30,58,280,280); ctx.restore();
+          ctx.fillStyle='#8e8e93';
+          ctx.font='500 11px "SF Mono",monospace';
+          ctx.fillText(`${id.slice(0,8)}···${id.slice(-8)}`,W/2,H-28);
+          ctx.fillStyle='#48484a';
+          ctx.font='500 10px Inter,sans-serif';
+          ctx.fillText('SCU QR Assistant',W/2,H-11);
+          document.body.removeChild(tmp); resolve(c);
+        },180);
       });
     }
 
-    function roundRect(ctx, x, y, w, h, r) {
-      ctx.beginPath();
-      ctx.moveTo(x+r, y);
-      ctx.lineTo(x+w-r, y);
-      ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-      ctx.lineTo(x+w, y+h-r);
-      ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
-      ctx.lineTo(x+r, y+h);
-      ctx.quadraticCurveTo(x, y+h, x, y+h-r);
-      ctx.lineTo(x, y+r);
-      ctx.quadraticCurveTo(x, y, x+r, y);
-      ctx.closePath();
-    }
-    function roundRectTop(ctx, x, y, w, h, r) {
-      ctx.beginPath();
-      ctx.moveTo(x+r, y);
-      ctx.lineTo(x+w-r, y);
-      ctx.quadraticCurveTo(x+w, y, x+w, y+r);
-      ctx.lineTo(x+w, y+h);
-      ctx.lineTo(x, y+h);
-      ctx.lineTo(x, y+r);
-      ctx.quadraticCurveTo(x, y, x+r, y);
-      ctx.closePath();
-    }
+    function rrect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h-r);ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);ctx.lineTo(x+r,y+h);ctx.quadraticCurveTo(x,y+h,x,y+h-r);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
+    function rrectTop(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.quadraticCurveTo(x+w,y,x+w,y+r);ctx.lineTo(x+w,y+h);ctx.lineTo(x,y+h);ctx.lineTo(x,y+r);ctx.quadraticCurveTo(x,y,x+r,y);ctx.closePath();}
 
-    // Main generate
-    const genBtn = document.getElementById('gen-btn');
-    const clearBtn = document.getElementById('clear-btn');
-    const dlAllBtn = document.getElementById('dl-all-btn');
-    const urlInput = document.getElementById('url-input');
-    const urlError = document.getElementById('url-error');
-    const outputEl = document.getElementById('qr-output');
-    const progressEl = document.getElementById('progress');
-    const progressFill = document.getElementById('progress-fill');
-    const statsEl = document.getElementById('stats');
+    const genBtn=document.getElementById('gen-btn');
+    const clearBtn=document.getElementById('clear-btn');
+    const dlAllBtn=document.getElementById('dl-all-btn');
+    const urlInput=document.getElementById('url-input');
+    const urlError=document.getElementById('url-error');
+    const outputEl=document.getElementById('qr-output');
+    const progEl=document.getElementById('progress');
+    const progFill=document.getElementById('progress-fill');
+    const statsEl=document.getElementById('stats');
+    let canvases=[];
 
-    let allCanvases = [];
-
-    genBtn.onclick = async () => {
-      const lines = urlInput.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-      if (lines.length === 0) {
-        urlError.innerHTML = '⚠️ 请至少输入一个URL';
+    genBtn.onclick = async()=>{
+      const lines=urlInput.value.split('\n').map(l=>l.trim()).filter(Boolean);
+      if(!lines.length){
+        urlError.innerHTML='Please enter at least one URL.';
         urlError.classList.add('show');
-        setTimeout(() => urlError.classList.remove('show'), 2500);
+        setTimeout(()=>urlError.classList.remove('show'),2500);
         return;
       }
-      const items = [];
-      const errors = [];
-      lines.forEach((line, i) => {
-        const id = extractId(line);
-        if (!id || id.length !== 32 || !/^[0-9a-f]{32}$/i.test(id)) {
-          errors.push(i + 1);
-        } else {
-          items.push({ id, index: i + 1 });
-        }
-      });
-      if (errors.length > 0 && items.length === 0) {
-        urlError.innerHTML = `⚠️ 第 ${errors.join(', ')} 行URL无效，请检查格式`;
+      const items=[],bad=[];
+      lines.forEach((l,i)=>{ const id=extractId(l); id?items.push({id,n:i+1}):bad.push(i+1); });
+      if(!items.length){
+        urlError.innerHTML=`Line ${bad.join(', ')} — invalid. Must be from ${HOST}.`;
         urlError.classList.add('show');
-        setTimeout(() => urlError.classList.remove('show'), 3000);
+        setTimeout(()=>urlError.classList.remove('show'),3500);
         return;
       }
-      if (errors.length > 0) {
-        showToast(`⚠️ 第 ${errors.join(', ')} 行已跳过`, 3000);
-      }
+      if(bad.length) toast(`Skipped line ${bad.join(', ')}`,3000);
 
-      outputEl.innerHTML = '';
-      allCanvases = [];
-      progressEl.classList.add('show');
-      progressFill.style.width = '0%';
-      genBtn.disabled = true;
-      genBtn.innerHTML = '<span class="skeleton" style="width:14px;height:14px;border-radius:50%;display:inline-block;"></span> 生成中...';
+      outputEl.innerHTML=''; canvases=[];
+      progEl.classList.add('show'); progFill.style.width='0%';
+      genBtn.disabled=true;
+      genBtn.innerHTML='<span class="skeleton" style="width:13px;height:13px;border-radius:50%;display:inline-block;"></span>&nbsp;Generating…';
 
-      const total = items.length * 2;
-      let done = 0;
+      const total=items.length*2; let done=0;
 
-      for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        const num = i + 1;
-        const urlIn = `https://zjczs.scu.edu.cn/ccylmp/pages/main/index/signing?id=${item.id}&type=in`;
-        const urlOut = `https://zjczs.scu.edu.cn/ccylmp/pages/main/index/signing?id=${item.id}&type=out`;
+      for(let i=0;i<items.length;i++){
+        const {id}=items[i], num=i+1;
+        const uIn=`https://dekt.scu.edu.cn/ccylmp/pages/main/index/signing?id=${id}&type=in&state=1`;
+        const uOut=`https://dekt.scu.edu.cn/ccylmp/pages/main/index/signing?id=${id}&type=out&state=1`;
 
-        const section = document.createElement('div');
-        section.className = 'card qr-section';
-        section.style.animationDelay = `${i * 0.08}s`;
-        section.innerHTML = `
-          <div class="section-header">
-            <div class="section-badge">${num}</div>
-            <div class="section-info">
-              <h3>活动 #${num}</h3>
-              <span>${item.id}</span>
+        const sec=document.createElement('div');
+        sec.className='card qr-section';
+        sec.style.animationDelay=`${i*0.06}s`;
+        sec.innerHTML=`
+          <div class="activity-header">
+            <div class="act-badge">${num}</div>
+            <div class="act-info">
+              <h3>Activity #${num}</h3>
+              <span>${id}</span>
             </div>
           </div>
-          <div class="qr-grid" id="grid-${num}"></div>
-        `;
-        outputEl.appendChild(section);
-        const grid = document.getElementById(`grid-${num}`);
+          <div class="qr-grid" id="g${num}"></div>`;
+        outputEl.appendChild(sec);
+        const grid=document.getElementById(`g${num}`);
 
-        for (const type of ['in', 'out']) {
-          const url = type === 'in' ? urlIn : urlOut;
-          const canvas = await createLabeledQR(url, item.id, num, type);
-          done++;
-          progressFill.style.width = `${(done/total)*100}%`;
-          if (!canvas) continue;
+        for(const type of ['in','out']){
+          const cv=await makeQR(type==='in'?uIn:uOut,id,num,type);
+          done++; progFill.style.width=`${done/total*100}%`;
+          if(!cv) continue;
+          const lbl=type==='in'?'Check-in':'Check-out';
+          canvases.push({cv,name:`Activity${num}_${lbl}.png`});
 
-          allCanvases.push({ canvas, name: `活动${num}_${type === 'in' ? '签到' : '签退'}.png` });
-
-          const qrItem = document.createElement('div');
-          qrItem.className = 'qr-item';
-          qrItem.style.animationDelay = `${done * 0.06}s`;
-          const isIn = type === 'in';
-          qrItem.innerHTML = `
-            <div class="qr-type-badge ${type}">
-              <span class="dot"></span>
-              ${isIn ? '签到' : '签退'}
-            </div>
+          const qi=document.createElement('div');
+          qi.className='qr-item';
+          qi.style.animationDelay=`${done*0.05}s`;
+          qi.innerHTML=`
+            <div class="type-badge ${type}"><span class="pulse"></span>${lbl}</div>
             <div class="qr-canvas-wrap"></div>
-            <button class="qr-dl-btn">↓ 下载</button>
-          `;
-          const wrap = qrItem.querySelector('.qr-canvas-wrap');
-          const display = document.createElement('canvas');
-          const dW = 150, dH = Math.round(150 * (420/340));
-          display.width = dW; display.height = dH;
-          display.style.width = '100%';
-          display.style.height = 'auto';
-          const dctx = display.getContext('2d');
-          dctx.drawImage(canvas, 0, 0, 340, 420, 0, 0, dW, dH);
-          wrap.appendChild(display);
+            <button class="save-btn">↓ Save</button>`;
 
-          const dlBtn = qrItem.querySelector('.qr-dl-btn');
-          const fname = `活动${num}_${isIn ? '签到' : '签退'}.png`;
-          dlBtn.onclick = () => {
-            const a = document.createElement('a');
-            a.href = canvas.toDataURL('image/png');
-            a.download = fname;
-            a.click();
-            showToast('✅ 已下载 ' + fname);
+          const disp=document.createElement('canvas');
+          const dW=150,dH=Math.round(150*420/340);
+          disp.width=dW; disp.height=dH;
+          disp.style.cssText='width:100%;height:auto;';
+          disp.getContext('2d').drawImage(cv,0,0,340,420,0,0,dW,dH);
+          qi.querySelector('.qr-canvas-wrap').appendChild(disp);
+
+          const fname=`Activity${num}_${lbl}.png`;
+          qi.querySelector('.save-btn').onclick=()=>{
+            const a=document.createElement('a');
+            a.href=cv.toDataURL('image/png'); a.download=fname; a.click();
+            toast('✓  Saved '+fname);
           };
-          grid.appendChild(qrItem);
+          grid.appendChild(qi);
         }
       }
 
-      genBtn.disabled = false;
-      genBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM17 14v3m0 3v0m0 0h0"/></svg> 生成二维码`;
-      setTimeout(() => progressEl.classList.remove('show'), 600);
-      dlAllBtn.style.display = allCanvases.length > 0 ? 'inline-flex' : 'none';
-
-      statsEl.style.display = 'flex';
-      document.getElementById('stat-total').innerHTML = `📋 ${items.length} 个活动`;
-      document.getElementById('stat-qr').innerHTML = `✅ ${allCanvases.length} 个二维码`;
-      showToast(`✅ 已生成 ${allCanvases.length} 个二维码`);
+      genBtn.disabled=false;
+      genBtn.innerHTML=`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><path d="M14 17h3m4 0h-1m-3 3v-3m0-4v1"/></svg> Generate`;
+      setTimeout(()=>progEl.classList.remove('show'),600);
+      dlAllBtn.style.display=canvases.length?'inline-flex':'none';
+      statsEl.style.display='flex';
+      document.getElementById('stat-total').innerHTML=`${items.length} activities`;
+      document.getElementById('stat-qr').innerHTML=`${canvases.length} QR codes`;
+      toast(`✓  Generated ${canvases.length} QR codes`);
     };
 
-    clearBtn.onclick = () => {
-      urlInput.value = '';
-      outputEl.innerHTML = '';
-      allCanvases = [];
-      dlAllBtn.style.display = 'none';
-      statsEl.style.display = 'none';
-      showToast('🗑️ 已清空');
+    clearBtn.onclick=()=>{
+      urlInput.value=''; outputEl.innerHTML=''; canvases=[];
+      dlAllBtn.style.display='none'; statsEl.style.display='none';
+      toast('Cleared');
     };
 
-    dlAllBtn.onclick = async () => {
-      if (allCanvases.length === 0) return;
-      dlAllBtn.disabled = true;
-      dlAllBtn.innerHTML = '<span class="skeleton" style="width:14px;height:14px;border-radius:50%;display:inline-block;"></span> 打包中...';
-      try {
-        const zip = new JSZip();
-        const folder = zip.folder('SCU二课二维码');
-        for (const item of allCanvases) {
-          const dataUrl = item.canvas.toDataURL('image/png');
-          const base64 = dataUrl.split(',')[1];
-          folder.file(item.name, base64, { base64: true });
-        }
-        const blob = await zip.generateAsync({ type: 'blob' });
-        saveAs(blob, 'SCU二课二维码.zip');
-        showToast('✅ 打包下载成功');
-      } catch (e) {
-        showToast('❌ 打包失败，请逐个下载');
-      }
-      dlAllBtn.disabled = false;
-      dlAllBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> 打包下载`;
+    dlAllBtn.onclick=async()=>{
+      if(!canvases.length) return;
+      dlAllBtn.disabled=true;
+      dlAllBtn.innerHTML='<span class="skeleton" style="width:13px;height:13px;border-radius:50%;display:inline-block;"></span>&nbsp;Exporting…';
+      try{
+        const zip=new JSZip(),folder=zip.folder('SCU_QR_Codes');
+        for(const {cv,name} of canvases)
+          folder.file(name,cv.toDataURL('image/png').split(',')[1],{base64:true});
+        saveAs(await zip.generateAsync({type:'blob'}),'SCU_QR_Codes.zip');
+        toast('✓  ZIP exported');
+      }catch{ toast('Export failed — try saving individually.'); }
+      dlAllBtn.disabled=false;
+      dlAllBtn.innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg> Export ZIP`;
     };
 
-    urlInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) genBtn.click();
-    });
-
-    // Button ripple effect
-    document.querySelectorAll('.btn').forEach(btn => {
-      btn.addEventListener('mousemove', e => {
-        const rect = btn.getBoundingClientRect();
-        btn.style.setProperty('--x', ((e.clientX - rect.left) / rect.width * 100) + '%');
-        btn.style.setProperty('--y', ((e.clientY - rect.top) / rect.height * 100) + '%');
-      });
-    });
+    urlInput.addEventListener('keydown',e=>{ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)) genBtn.click(); });
   </script>
 </body>
 </html>
