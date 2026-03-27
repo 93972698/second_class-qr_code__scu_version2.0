@@ -691,7 +691,7 @@
       <h1>SCU 二课助手</h1>
       <p class="subtitle">请输入访问密码以继续</p>
       <input type="password" id="pwd-input" placeholder="· · · · · ·" autocomplete="off">
-      <div class="error-msg" id="pwd-error">⚠️ 密码错误，请重新输入</div>
+      <div class="error-msg" id="pwd-error">密码错误，请重新输入</div>
       <div class="btn-group" style="justify-content:center;">
         <button class="btn btn-primary" id="pwd-btn" style="width:100%;padding:14px;">解锁</button>
       </div>
@@ -727,12 +727,11 @@
         <div class="collapse-body" id="instr-body">
           <div class="divider"></div>
           <div class="card-desc">
-            <strong>① </strong> 在下方输入框中粘贴二课报名URL，<strong>每行一个</strong>，支持批量导入<br>
-            <strong>② </strong> URL 示例：<code>https://zjczs.scu.edu.cn/...?id=252da0ea...</code><br>
-            <strong>③ </strong> 点击「生成二维码」自动批量生成签到 / 签退码<br>
-            <strong>④ </strong> 支持单个下载或一键打包下载全部二维码
+            <strong>1. </strong> 在下方输入框中粘贴二课报名URL，<strong>每行一个</strong>，支持批量导入<br>
+            <strong>2. </strong> 点击「生成二维码」自动批量生成签到 / 签退码<br>
+            <strong>3. </strong> 支持单个下载或一键打包下载全部二维码
           </div>
-          <div class="tip">⚠️ 本工具仅供个人使用，禁止分享传播</div>
+          <div class="tip"> 本工具仅供个人使用，禁止分享传播</div>
         </div>
       </div>
 
@@ -810,7 +809,7 @@
       if (pwdInput.value === 'syywmddzml') {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('main-screen').style.display = 'block';
-        showToast('✅ 验证成功，欢迎使用');
+        showToast('验证成功，欢迎使用');
       } else {
         pwdError.classList.add('show');
         pwdInput.style.borderColor = 'var(--danger)';
@@ -936,7 +935,7 @@
     genBtn.onclick = async () => {
       const lines = urlInput.value.split('\n').map(l => l.trim()).filter(l => l.length > 0);
       if (lines.length === 0) {
-        urlError.innerHTML = '⚠️ 请至少输入一个URL';
+        urlError.innerHTML = '请至少输入一个URL';
         urlError.classList.add('show');
         setTimeout(() => urlError.classList.remove('show'), 2500);
         return;
@@ -974,8 +973,9 @@
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
         const num = i + 1;
-        const urlIn = `https://zjczs.scu.edu.cn/ccylmp/pages/main/index/signing?id=${item.id}&type=in`;
-        const urlOut = `https://zjczs.scu.edu.cn/ccylmp/pages/main/index/signing?id=${item.id}&type=out`;
+        const urlIn  = `https://dekt.scu.edu.cn/ccylmp/pages/main/index/signing?id=${item.id}&type=in&state=1`;
+        const urlOut = `https://dekt.scu.edu.cn/ccylmp/pages/main/index/signing?id=${item.id}&type=out&state=1`;
+
 
         const section = document.createElement('div');
         section.className = 'card qr-section';
