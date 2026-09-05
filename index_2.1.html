@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="A quiet, minimalist dark workspace for SCU activity QR codes.">
+  <title>SCU — QR Studio</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/fflate@0.8.2/umd/index.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --paper: #111210;
+      --ink: #ededea;
+      --muted: #84857e;
+      --line: #262723;
+      --line-strong: #383933;
+      --soft: #181916;
+      --soft-hover: #20221e;
+      --error: #f08c7d;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html { scrollbar-gutter: stable; background: var(--paper); }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font: 14px/1.6 var(--font);
+      -webkit-font-smoothing: antialiased;
+    }
+    ::selection { background: var(--ink); color: var(--paper); }
+    button, input, textarea, select { font: inherit; }
+    button, a, input, textarea, select { -webkit-tap-highlight-color: transparent; }
+    button { cursor: pointer; color: inherit; }
+    button:disabled { opacity: .35; cursor: not-allowed; }
+    a { color: inherit; text-underline-offset: 4px; }
+    button, a { touch-action: manipulation; }
+    :focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; }
+    h1, h2, h3, h4, p { margin: 0; }
+    
+    .frame { width: min(1320px, calc(100% - 96px)); margin: auto; }
+    .mono {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .muted { color: var(--muted); }
+
+    /* Top Masthead */
+    .masthead {
+      min-height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .identity { display: flex; align-items: center; gap: 16px; }
+    .wordmark { font-size: 13px; font-weight: 500; letter-spacing: -.2px; }
+    .wordmark span { color: var(--muted); margin-left: 8px; font-weight: 400; }
+    .symbol {
+      width: 26px; height: 26px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .symbol i { background: var(--ink); display: block; }
+    .symbol i:nth-child(2) { background: none; border: 1px solid var(--ink); }
+    .symbol i:nth-child(3) { border-radius: 50%; }
+    .symbol i:nth-child(4) { width: 5px; height: 5px; align-self: end; justify-self: end; }
+
+    .nav { display: flex; align-items: center; gap: 24px; }
+    .text-button {
+      padding: 6px 0;
+      border: 0;
+      background: none;
+      font-size: 11px;
+      color: var(--muted);
+      text-decoration: none;
+      white-space: nowrap;
+      transition: color .15s ease;
+    }
+    .text-button:hover:not(:disabled) { color: var(--ink); }
+    .text-button.underlined { text-decoration: underline; text-underline-offset: 4px; }
+
+    /* Intro Headline */
+    .intro {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 40px;
+      padding: 70px 0 60px;
+      align-items: end;
+    }
+    .intro h1 {
+      font-size: clamp(52px, 7vw, 98px);
+      line-height: .96;
+      font-weight: 400;
+      letter-spacing: -.07em;
+      margin-left: -4px;
+    }
+    .intro h1 span { color: var(--muted); }
+    .intro-copy p { font-size: 12px; line-height: 1.85; color: var(--muted); margin-top: 12px; }
+
+    /* Workspace Layout */
+    .workspace {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr);
+      border-top: 1px solid var(--line-strong);
+      min-height: 600px;
+    }
+    .input-column { padding: 26px 36px 48px 0; border-right: 1px solid var(--line); }
+    .output-column { padding: 26px 0 48px 40px; min-width: 0; }
+    .section-head { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 30px; }
+    .section-head h2 { font-weight: 400; font-size: 11px; letter-spacing: .03em; }
+    .section-head h2 span { color: var(--muted); margin-right: 16px; font-family: var(--mono); font-size: 10px; }
+    
+    .input-label { display: block; font-size: 12px; margin-bottom: 8px; }
+    .field-note { color: var(--muted); font-size: 11px; line-height: 1.8; }
+    
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 200px;
+      margin-top: 18px;
+      border: 1px solid var(--line);
+      background: var(--soft);
+      padding: 14px;
+      color: var(--ink);
+      font: 11px/1.85 var(--mono);
+      resize: vertical;
+      transition: border-color .15s ease;
+    }
+    textarea::placeholder { color: var(--muted); opacity: .7; }
+    textarea:focus { border-color: var(--ink); outline: none; }
+    
+    .input-bottom {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 12px; padding: 10px 0 20px;
+    }
+    .input-bottom .tools { display: flex; gap: 14px; }
+    
+    .options { border-top: 1px solid var(--line); margin-top: 4px; }
+    .option-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--line);
+      min-height: 46px;
+      font-size: 11px;
+    }
+    select {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 11px;
+      cursor: pointer;
+      padding-right: 4px;
+    }
+    select option { background: var(--paper); color: var(--ink); }
+    select:focus { outline: none; color: var(--ink); }
+
+    .action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border: 1px solid var(--ink);
+      padding: 12px 16px;
+      min-height: 46px;
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: opacity .15s ease;
+    }
+    .action:hover:not(:disabled) { opacity: .86; }
+    .generate { width: 100%; margin-top: 24px; }
+    .sub-actions { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; }
+    .shortcut { font-size: 9px; letter-spacing: 0; color: var(--muted); font-family: var(--mono); }
+
+    .feedback {
+      margin-top: 20px;
+      padding-left: 12px;
+      border-left: 1px solid var(--error);
+      color: var(--error);
+      font-size: 11px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      max-height: 180px;
+      overflow-y: auto;
+    }
+    .progress-wrap { margin-top: 20px; }
+    progress {
+      width: 100%; height: 2px; border: 0;
+      display: block; accent-color: var(--ink); background: var(--line);
+    }
+    progress::-webkit-progress-bar { background: var(--line); }
+    progress::-webkit-progress-value { background: var(--ink); }
+    progress::-moz-progress-bar { background: var(--ink); }
+    .progress-text { margin-top: 8px; font: 10px/1.6 var(--mono); color: var(--muted); }
+
+    .notes { margin-top: 36px; }
+    details { font-size: 11px; color: var(--muted); }
+    summary { cursor: pointer; color: var(--ink); }
+    details ol { padding-left: 16px; line-height: 1.85; margin: 14px 0; }
+    details li { margin-bottom: 7px; }
+    .privacy { margin-top: 20px; font-size: 10px; line-height: 1.8; color: var(--muted); }
+
+    /* Empty State Composition */
+    .empty {
+      min-height: 420px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    .composition { position: relative; width: 120px; height: 120px; margin-bottom: 34px; }
+    .composition .c-square { position: absolute; left: 0; top: 0; width: 54px; height: 54px; border: 1px solid var(--ink); }
+    .composition .c-circle { position: absolute; right: 0; top: 0; width: 54px; height: 54px; background: var(--ink); border-radius: 50%; }
+    .composition .c-line { position: absolute; bottom: 24px; left: 0; width: 54px; height: 1px; background: var(--ink); transform: rotate(-45deg); }
+    .composition .c-dot { position: absolute; right: 18px; bottom: 18px; width: 16px; height: 16px; background: var(--ink); }
+    .empty h3 { font-size: 16px; font-weight: 400; letter-spacing: -.3px; margin-bottom: 8px; }
+    .empty p { font-size: 11px; color: var(--muted); max-width: 230px; line-height: 1.85; }
+
+    /* Output Area */
+    .export-bar { padding: 0 0 20px; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+    .stats { color: var(--muted); font: 10px/1.8 var(--mono); margin-bottom: 10px; }
+    .export-actions { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+    .export-actions .text-button:first-child { color: var(--ink); }
+
+    .activity { padding: 26px 0 32px; border-bottom: 1px solid var(--line); }
+    .activity-header { display: flex; align-items: baseline; justify-content: space-between; gap: 15px; margin-bottom: 24px; }
+    .activity-header h3 { font-size: 13px; font-weight: 400; letter-spacing: -.1px; }
+    .activity-id { color: var(--muted); font: 9px/1.7 var(--mono); overflow-wrap: anywhere; }
+    
+    .qr-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
+    .qr-item { min-width: 0; }
+    .qr-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .qr-top h4 { font-size: 11px; font-weight: 400; }
+    .file-size { font: 9px/1.5 var(--mono); color: var(--muted); }
+    
+    .qr-stage {
+      min-height: 200px;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--soft);
+      border: 1px solid var(--line);
+      padding: 22px;
+    }
+    .qr-image-button {
+      display: block; border: 0; padding: 0;
+      background: #fff; cursor: zoom-in; width: min(100%, 168px);
+      line-height: 0;
+    }
+    .qr-image-button img { width: 100%; height: auto; display: block; image-rendering: pixelated; }
+    .qr-info { display: flex; justify-content: space-between; gap: 10px; margin-top: 9px; color: var(--muted); font: 9px/1.6 var(--mono); }
+    
+    .direct-link {
+      display: block; color: var(--muted);
+      font: 10px/1.8 var(--mono);
+      overflow-wrap: anywhere;
+      text-decoration: none;
+      margin-top: 16px;
+      transition: color .15s ease;
+    }
+    .direct-link:hover { color: var(--ink); text-decoration: underline; }
+    .qr-actions { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 10px; }
+    .qr-actions .text-button { font-size: 10px; }
+    .qr-actions a { margin-left: auto; color: var(--ink); }
+
+    footer {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+      gap: 15px; padding: 25px 0 32px; border-top: 1px solid var(--line);
+      font-size: 10px; color: var(--muted);
+    }
+
+    /* Entry Authentication */
+    .entry {
+      min-height: 100svh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+    .entry-header { display: flex; align-items: center; justify-content: space-between; padding: 32px 0; }
+    .entry-main { display: grid; grid-template-columns: 1fr 320px; gap: 80px; align-items: center; padding: 60px 0 80px; }
+    .entry-title { font-size: clamp(64px, 9vw, 136px); line-height: .9; font-weight: 400; letter-spacing: -.075em; margin: 30px 0 26px -6px; }
+    .entry-title span { color: var(--muted); }
+    .entry-description { max-width: 280px; color: var(--muted); font-size: 12px; line-height: 1.85; }
+    
+    .entry-form { border-top: 1px solid var(--line-strong); padding-top: 24px; }
+    .entry-form h2 { font-size: 14px; font-weight: 400; margin-bottom: 6px; }
+    .entry-form > p { font-size: 11px; color: var(--muted); }
+    .password-label { display: block; font-size: 10px; margin-top: 28px; color: var(--muted); }
+    
+    input[type="password"] {
+      width: 100%; border: 0; border-bottom: 1px solid var(--line);
+      background: transparent; color: var(--ink);
+      padding: 12px 0; outline-offset: 3px;
+      font-size: 18px; letter-spacing: 5px;
+      margin-bottom: 24px;
+      transition: border-color .15s ease;
+    }
+    input[type="password"]:focus { border-color: var(--ink); outline: none; }
+    .entry-form .action { width: 100%; }
+    .entry-note { color: var(--muted); font-size: 10px; line-height: 1.8; margin-top: 22px; }
+    .entry-footer { padding: 24px 0; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 20px; color: var(--muted); font-size: 10px; }
+
+    /* Toast & Modal */
+    .toast {
+      position: fixed; bottom: 25px; left: 50%; transform: translate(-50%, 8px);
+      opacity: 0; pointer-events: none; z-index: 20;
+      background: var(--ink); color: var(--paper); padding: 12px 18px;
+      font-size: 11px; font-weight: 500; max-width: calc(100% - 32px);
+      transition: opacity .18s, transform .18s;
+    }
+    .toast.visible { opacity: 1; transform: translate(-50%, 0); }
+    
+    dialog {
+      width: min(440px, calc(100% - 40px));
+      max-height: 90svh; overflow: auto;
+      background: var(--paper); color: var(--ink);
+      border: 1px solid var(--line-strong); padding: 26px;
+    }
+    dialog::backdrop { background: rgba(0, 0, 0, .8); }
+    .dialog-head { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+    .dialog-head h2 { font-size: 13px; font-weight: 400; }
+    dialog img { display: block; width: 100%; height: auto; margin: 24px 0 16px; image-rendering: pixelated; }
+    dialog .action { width: 100%; margin-top: 20px; }
+
+    @media (max-width: 1080px) {
+      .frame { width: calc(100% - 56px); }
+      .workspace { grid-template-columns: 290px minmax(0, 1fr); }
+      .input-column { padding-right: 24px; }
+      .output-column { padding-left: 24px; }
+      .qr-grid { gap: 22px; }
+      .entry-main { gap: 40px; }
+    }
+    @media (max-width: 800px) {
+      .intro { grid-template-columns: 1fr; padding: 48px 0; gap: 20px; }
+      .intro h1 { font-size: 60px; }
+      .workspace { grid-template-columns: 1fr; min-height: auto; }
+      .input-column { border-right: 0; padding: 20px 0 32px; }
+      .output-column { border-top: 1px solid var(--line-strong); padding: 24px 0 40px; }
+      .qr-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .entry-main { grid-template-columns: 1fr; gap: 36px; padding: 40px 0 60px; }
+    }
+    @media (max-width: 520px) {
+      .frame { width: calc(100% - 32px); }
+      .qr-grid { grid-template-columns: 1fr; }
+      .intro h1 { font-size: 46px; }
+      .entry-title { font-size: 72px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- Passcode Screen -->
+  <section id="entry" class="entry frame">
+    <header class="entry-header">
+      <div class="identity">
+        <div class="symbol" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="wordmark">SCU <span>QR Studio</span></div>
+      </div>
+      <span class="mono muted">Dark Mode</span>
+    </header>
+
+    <div class="entry-main">
+      <div>
+        <div class="mono muted">An independent utility</div>
+        <h1 class="entry-title">Less,<br><span>but better.</span></h1>
+        <p class="entry-description">A quiet darkroom for activity codes.<br>Small files. Direct links. Zero clutter.</p>
+      </div>
+      <form id="login-form" class="entry-form">
+        <h2>Enter Studio</h2>
+        <p>Passcode protected environment.</p>
+        <label class="password-label mono" for="password">Passcode</label>
+        <input id="password" type="password" autocomplete="current-password" required aria-describedby="entry-note">
+        <button id="unlock" class="action" type="submit"><span>Unlock</span><span aria-hidden="true">→</span></button>
+        <div id="login-error" class="feedback" role="alert" hidden></div>
+        <div id="entry-note" class="entry-note">Client-side verification prompt only.</div>
+      </form>
+    </div>
+
+    <div class="entry-footer">
+      <span>Architected for extreme clarity.</span>
+      <span class="mono">SCU / QR</span>
+    </div>
+  </section>
+
+  <!-- Main Workspace -->
+  <div id="app" hidden>
+    <header class="frame masthead">
+      <div class="identity">
+        <div class="symbol" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="wordmark">SCU <span>QR Studio</span></div>
+      </div>
+      <nav class="nav" aria-label="Controls">
+        <button id="lock" class="text-button" type="button">Lock Session ↗</button>
+      </nav>
+    </header>
+
+    <main class="frame">
+      <section class="intro">
+        <h1>Arrival.<br><span>Departure.</span></h1>
+        <div class="intro-copy">
+          <div class="mono muted">Direct generation</div>
+          <p>Paste links or IDs below. Outputs 1-bit high-contrast QR files and live clickable links.</p>
+        </div>
+      </section>
+
+      <div class="workspace">
+        <aside class="input-column" aria-labelledby="input-title">
+          <div class="section-head">
+            <h2 id="input-title"><span>01</span>Input</h2>
+            <span class="mono">Batch</span>
+          </div>
+
+          <label for="input" class="input-label">Activity Source</label>
+          <p class="field-note">Paste SCU activity URLs or 32-char hex IDs, one per line.</p>
+          <textarea id="input" spellcheck="false" autocapitalize="off" placeholder="Paste links or activity IDs..."></textarea>
+
+          <div class="input-bottom">
+            <span id="line-count" class="mono muted">0 lines</span>
+            <div class="tools">
+              <button id="paste" class="text-button" type="button">Paste</button>
+              <button id="import" class="text-button" type="button">Import .txt</button>
+              <input id="file" type="file" accept=".txt,text/plain" hidden>
+            </div>
+          </div>
+
+          <div class="options">
+            <div class="option-row">
+              <label for="format">Download Format</label>
+              <select id="format">
+                <option value="png">PNG / 1-bit Raw (~1.2KB)</option>
+                <option value="svg">SVG / Vector Path</option>
+              </select>
+            </div>
+            <div class="option-row">
+              <label for="scale">Pixel Resolution</label>
+              <select id="scale">
+                <option value="3">Compact / 3 px</option>
+                <option value="4" selected>Default / 4 px</option>
+                <option value="6">Large / 6 px</option>
+                <option value="8">Print / 8 px</option>
+              </select>
+            </div>
+          </div>
+
+          <button id="generate" class="action generate" type="button"><span>Generate QR</span><span aria-hidden="true">→</span></button>
+          <div class="sub-actions">
+            <span class="shortcut">⌘ / Ctrl + Enter</span>
+            <button id="clear" class="text-button" type="button">Clear</button>
+            <button id="cancel" class="text-button" type="button" hidden>Stop</button>
+          </div>
+
+          <div id="feedback" class="feedback" role="alert" hidden></div>
+          <div id="progress-wrap" class="progress-wrap" hidden>
+            <progress id="progress" max="100" value="0" aria-label="Generation progress"></progress>
+            <div id="progress-text" class="progress-text" role="status"></div>
+          </div>
+
+          <div class="notes">
+            <details>
+              <summary>Execution details</summary>
+              <ol>
+                <li>Automated duplicate ID purging. Up to 100 items per batch.</li>
+                <li>1-bit grayscale PNGs omit all metadata and colors, producing minimal footprint.</li>
+                <li>Standard 4-module quiet zone and M-level error correction are strictly preserved.</li>
+                <li>Links direct to actual check-in/out signing endpoints.</li>
+              </ol>
+              <a href="https://dekt.scu.edu.cn/ccylmp/pages/main/activity/activity" target="_blank" rel="noopener noreferrer">SCU Activity Portal ↗</a>
+            </details>
+            <p class="privacy">Client-side execution only. No user data uploaded to any remote server.</p>
+          </div>
+        </aside>
+
+        <section class="output-column" aria-labelledby="output-title">
+          <div class="section-head">
+            <h2 id="output-title"><span>02</span>Output</h2>
+            <span id="status" class="mono" aria-live="polite">Awaiting input</span>
+          </div>
+
+          <div id="export-bar" class="export-bar" hidden>
+            <div id="stats" class="stats" aria-live="polite"></div>
+            <div class="export-actions">
+              <button id="zip" class="text-button underlined" type="button">Export ZIP Package ↗</button>
+              <button id="copy-all" class="text-button" type="button">Copy All Links</button>
+              <button id="export-links" class="text-button" type="button">Export links.txt</button>
+            </div>
+          </div>
+
+          <div id="empty" class="empty">
+            <div class="composition" aria-hidden="true">
+              <div class="c-square"></div>
+              <div class="c-circle"></div>
+              <div class="c-line"></div>
+              <div class="c-dot"></div>
+            </div>
+            <h3>Canvas clear.</h3>
+            <p>Add activity links to preview codes and live signing URLs.</p>
+          </div>
+          <div id="output"></div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="frame">
+      <span>Independent Tool · Dark Monochrome</span>
+      <span class="mono">SCU QR Engine</span>
+    </footer>
+  </div>
+
+  <!-- Modal Preview -->
+  <dialog id="preview" aria-labelledby="preview-title">
+    <div class="dialog-head">
+      <h2 id="preview-title">QR Inspect</h2>
+      <button id="close-preview" class="text-button" type="button">Close ×</button>
+    </div>
+    <img id="preview-image" alt="Enlarged QR code">
+    <p id="preview-info" class="field-note"></p>
+    <a id="preview-link" class="action" target="_blank" rel="noopener noreferrer"><span>Open Signing Page</span><span aria-hidden="true">↗</span></a>
+  </dialog>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      'use strict';
+
+      const $ = id => document.getElementById(id);
+      const HOST = 'dekt.scu.edu.cn';
+      const PWD_HASH = '82745840f1a8601c5ddbd891f31dfd6ee2e8e515d9c7bdb9ea107ddfb633285a';
+      const ID_RE = /^[0-9a-f]{32}$/i;
+      const encoder = new TextEncoder();
+      const state = { records: [], busy: false, cancel: false, session: 0 };
+      const pause = () => new Promise(resolve => setTimeout(resolve, 0));
+      let toastTimer;
+
+      function node(tag, className, text) {
+        const element = document.createElement(tag);
+        if (className) element.className = className;
+        if (text !== undefined) element.textContent = text;
+        return element;
+      }
+
+      function notify(msg) {
+        $('toast').textContent = msg;
+        $('toast').classList.add('visible');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => $('toast').classList.remove('visible'), 2800);
+      }
+
+      function showFeedback(msg = '') {
+        $('feedback').textContent = msg;
+        $('feedback').hidden = !msg;
+      }
+
+      function sizeText(bytes) {
+        return bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(2)} KB`;
+      }
+
+      /* Passcode Check */
+      $('login-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        if ($('unlock').disabled) return;
+        $('unlock').disabled = true;
+        $('login-error').hidden = true;
+        try {
+          if (!window.crypto?.subtle) {
+            throw new Error('Web Cryptography unavailable. Run on HTTPS or localhost.');
+          }
+          const digest = await crypto.subtle.digest('SHA-256', encoder.encode($('password').value));
+          const hash = Array.from(new Uint8Array(digest), v => v.toString(16).padStart(2, '0')).join('');
+          if (hash !== PWD_HASH) throw new Error('Incorrect passcode.');
+          $('password').value = '';
+          state.session++;
+          $('entry').hidden = true;
+          $('app').hidden = false;
+          $('input').focus({ preventScroll: true });
+        } catch (err) {
+          $('login-error').textContent = err.message || 'Unlock failed.';
+          $('login-error').hidden = false;
+          $('password').focus();
+        } finally {
+          $('unlock').disabled = false;
+        }
+      });
+
+      function updateLines() {
+        const count = $('input').value.split(/\r?\n/).filter(l => l.trim()).length;
+        $('line-count').textContent = `${count} ${count === 1 ? 'line' : 'lines'}`;
+      }
+      $('input').addEventListener('input', updateLines);
+
+      function setBusy(busy, mode = 'generate') {
+        state.busy = busy;
+        ['generate', 'clear', 'paste', 'import', 'file', 'format', 'scale',
+          'lock', 'input', 'zip', 'copy-all', 'export-links'].forEach(id => {
+          $(id).disabled = busy;
+        });
+        $('generate').firstElementChild.textContent = busy && mode === 'generate' ? 'Generating...' : 'Generate QR';
+        $('zip').textContent = busy && mode === 'export' ? 'Zipping...' : 'Export ZIP Package ↗';
+        $('cancel').hidden = !(busy && mode === 'generate');
+        $('cancel').disabled = false;
+        $('clear').hidden = busy && mode === 'generate';
+      }
+
+      function parseLine(val) {
+        const raw = val.trim();
+        if (ID_RE.test(raw)) return raw;
+        let u;
+        try { u = new URL(raw); } catch {
+          throw new Error('Not a valid URL or 32-char ID.');
+        }
+        if (!['https:', 'http:'].includes(u.protocol) || u.hostname !== HOST) {
+          throw new Error(`Domain must be ${HOST}`);
+        }
+        const ids = u.searchParams.getAll('id');
+        const hash = u.hash.slice(1);
+        const q = hash.indexOf('?');
+        if (q >= 0) ids.push(...new URLSearchParams(hash.slice(q + 1)).getAll('id'));
+        else if (hash.startsWith('id=')) ids.push(...new URLSearchParams(hash).getAll('id'));
+        
+        if (ids.length !== 1 || !ID_RE.test(ids[0])) {
+          throw new Error('Missing or invalid 32-char ID in link.');
+        }
+        return ids[0];
+      }
+
+      function parseInput() {
+        const raw = $('input').value;
+        if (raw.length > 200000) throw new Error('Payload too large.');
+        const lines = raw.split(/\r?\n/);
+        const nonempty = lines.filter(l => l.trim()).length;
+        if (!nonempty) throw new Error('Please enter at least one link.');
+        if (nonempty > 500) throw new Error('Maximum 500 lines per batch.');
+        
+        const items = [], invalid = [], seen = new Set();
+        let duplicates = 0;
+        lines.forEach((l, i) => {
+          if (!l.trim()) return;
+          try {
+            const id = parseLine(l);
+            const k = id.toLowerCase();
+            if (seen.has(k)) { duplicates++; return; }
+            seen.add(k);
+            items.push(id);
+          } catch (err) {
+            invalid.push(`L${i + 1}: ${err.message}`);
+          }
+        });
+        if (items.length > 100) throw new Error('Limit: 100 unique items.');
+        return { items, invalid, duplicates };
+      }
+
+      function signingURL(id, type) {
+        const u = new URL(`https://${HOST}/ccylmp/pages/main/index/signing`);
+        u.searchParams.set('id', id);
+        u.searchParams.set('type', type);
+        u.searchParams.set('state', '1');
+        return u.href;
+      }
+
+      /* 1-Bit PNG Builder */
+      const crcTable = new Uint32Array(256);
+      for (let n = 0; n < 256; n++) {
+        let v = n;
+        for (let k = 0; k < 8; k++) v = v & 1 ? 0xedb88320 ^ (v >>> 1) : v >>> 1;
+        crcTable[n] = v >>> 0;
+      }
+
+      function crc32(buf) {
+        let c = 0xffffffff;
+        for (const b of buf) c = crcTable[(c ^ b) & 255] ^ (c >>> 8);
+        return (c ^ 0xffffffff) >>> 0;
+      }
+
+      function pngChunk(type, data) {
+        const out = new Uint8Array(data.length + 12);
+        const v = new DataView(out.buffer);
+        v.setUint32(0, data.length);
+        out.set(encoder.encode(type), 4);
+        out.set(data, 8);
+        v.setUint32(data.length + 8, crc32(out.subarray(4, data.length + 8)));
+        return out;
+      }
+
+      function makePNG(qr, scale) {
+        const count = qr.getModuleCount();
+        const size = (count + 8) * scale;
+        const stride = Math.ceil(size / 8);
+        const raw = new Uint8Array((stride + 1) * size);
+
+        for (let y = 0; y < size; y++) {
+          raw.fill(255, y * (stride + 1) + 1, y * (stride + 1) + stride + 1);
+        }
+
+        for (let r = 0; r < count; r++) {
+          for (let c = 0; c < count; c++) {
+            if (!qr.isDark(r, c)) continue;
+            const x0 = (c + 4) * scale;
+            const y0 = (r + 4) * scale;
+            for (let dy = 0; dy < scale; dy++) {
+              const off = (y0 + dy) * (stride + 1) + 1;
+              for (let dx = 0; dx < scale; dx++) {
+                const x = x0 + dx;
+                raw[off + (x >>> 3)] &= ~(1 << (7 - (x & 7)));
+              }
+            }
+          }
+        }
+
+        const header = new Uint8Array(13);
+        const view = new DataView(header.buffer);
+        view.setUint32(0, size);
+        view.setUint32(4, size);
+        header[8] = 1; // 1-bit grayscale
+        header[9] = 0;
+
+        return {
+          size,
+          blob: new Blob([
+            new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]),
+            pngChunk('IHDR', header),
+            pngChunk('IDAT', fflate.zlibSync(raw, { level: 9 })),
+            pngChunk('IEND', new Uint8Array(0))
+          ], { type: 'image/png' })
+        };
+      }
+
+      function makeSVG(qr) {
+        const count = qr.getModuleCount();
+        const size = count + 8;
+        const paths = [];
+        for (let r = 0; r < count; r++) {
+          let c = 0;
+          while (c < count) {
+            if (!qr.isDark(r, c)) { c++; continue; }
+            const start = c;
+            while (c < count && qr.isDark(r, c)) c++;
+            const w = c - start;
+            paths.push(`M${start + 4} ${r + 4}h${w}v1h-${w}z`);
+          }
+        }
+        const s = `<svg xmlns="http://www.w3.org/2000/svg" width="${size * 4}" height="${size * 4}" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges"><path fill="#fff" d="M0 0h${size}v${size}H0z"/><path fill="#000" d="${paths.join('')}"/></svg>`;
+        return new Blob([s], { type: 'image/svg+xml;charset=utf-8' });
+      }
+
+      function makeRecord(id, index, type, scale) {
+        const url = signingURL(id, type);
+        const qr = qrcode(0, 'M');
+        qr.addData(url, 'Byte');
+        qr.make();
+        const png = makePNG(qr, scale);
+        const svg = makeSVG(qr);
+        return {
+          id, index, type, url,
+          label: type === 'in' ? 'Check-in' : 'Check-out',
+          size: png.size,
+          png: png.blob,
+          svg,
+          previewURL: URL.createObjectURL(png.blob)
+        };
+      }
+
+      function currentBlob(rec) { return rec[$('format').value]; }
+
+      function filename(rec, fmt = $('format').value) {
+        return `${String(rec.index).padStart(2, '0')}_${rec.id}_${rec.type}.${fmt}`;
+      }
+
+      function download(blob, name) {
+        const u = URL.createObjectURL(blob);
+        const a = node('a');
+        a.href = u;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(u), 60000);
+      }
+
+      async function copyText(str) {
+        try {
+          if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(str);
+            notify('Copied to clipboard.');
+            return;
+          }
+        } catch {}
+        const area = node('textarea');
+        area.value = str;
+        area.style.cssText = 'position:fixed;left:0;top:0;opacity:0;pointer-events:none;';
+        document.body.appendChild(area);
+        area.focus();
+        area.select();
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch {}
+        area.remove();
+        notify(ok ? 'Copied to clipboard.' : 'Copy failed. Try selecting manually.');
+      }
+
+      function linksText() {
+        return state.records.map(r =>
+          `Activity #${String(r.index).padStart(2, '0')} [${r.label}]\nID: ${r.id}\n${r.url}`
+        ).join('\n\n');
+      }
+
+      function openPreview(rec) {
+        $('preview-title').textContent = `Activity #${String(rec.index).padStart(2, '0')} · ${rec.label}`;
+        $('preview-image').src = rec.previewURL;
+        $('preview-image').alt = `${rec.label} QR`;
+        $('preview-info').textContent = `${rec.size}×${rec.size} px lossless 1-bit module view.`;
+        $('preview-link').href = rec.url;
+        $('preview-link').firstElementChild.textContent = `Open Direct ${rec.label} URL`;
+        $('preview').showModal();
+      }
+      $('close-preview').onclick = () => $('preview').close();
+
+      function activitySection(id, index) {
+        const sec = node('article', 'activity');
+        const hdr = node('div', 'activity-header');
+        hdr.append(
+          node('h3', '', `Activity #${String(index).padStart(2, '0')}`),
+          node('p', 'activity-id', id)
+        );
+        const grid = node('div', 'qr-grid');
+        sec.append(hdr, grid);
+        return { sec, grid };
+      }
+
+      function renderRecord(rec, grid) {
+        const item = node('section', 'qr-item');
+        const top = node('div', 'qr-top');
+        rec.sizeElement = node('span', 'file-size');
+        top.append(node('h4', '', rec.label), rec.sizeElement);
+
+        const stage = node('div', 'qr-stage');
+        const btn = node('button', 'qr-image-button');
+        btn.type = 'button';
+        btn.setAttribute('aria-label', `Enlarge ${rec.label}`);
+        const img = node('img');
+        img.src = rec.previewURL;
+        img.alt = rec.label;
+        img.width = rec.size;
+        img.height = rec.size;
+        img.loading = 'lazy';
+        btn.appendChild(img);
+        btn.onclick = () => openPreview(rec);
+        stage.appendChild(btn);
+
+        const info = node('div', 'qr-info');
+        info.append(
+          node('span', '', `${rec.size} × ${rec.size} px`),
+          node('span', '', 'Zoom ↗')
+        );
+
+        /* Clickable Direct Link */
+        const directLink = node('a', 'direct-link', rec.url);
+        directLink.href = rec.url;
+        directLink.target = '_blank';
+        directLink.rel = 'noopener noreferrer';
+        directLink.setAttribute('title', 'Direct signing link');
+
+        const actions = node('div', 'qr-actions');
+        const cp = node('button', 'text-button', 'Copy link');
+        cp.type = 'button';
+        cp.onclick = () => copyText(rec.url);
+        
+        const sv = node('button', 'text-button');
+        sv.type = 'button';
+        rec.saveElement = sv;
+        sv.onclick = () => {
+          download(currentBlob(rec), filename(rec));
+          notify('Saved image.');
+        };
+
+        const op = node('a', 'text-button', 'Open URL ↗');
+        op.href = rec.url;
+        op.target = '_blank';
+        op.rel = 'noopener noreferrer';
+
+        actions.append(cp, sv, op);
+        item.append(top, stage, info, directLink, actions);
+        grid.appendChild(item);
+      }
+
+      function refreshStats() {
+        const fmt = $('format').value.toUpperCase();
+        const count = new Set(state.records.map(r => r.index)).size;
+        const totalSize = state.records.reduce((sum, r) => sum + currentBlob(r).size, 0);
+        $('stats').textContent = `${count} ${count === 1 ? 'activity' : 'activities'} · ${state.records.length} codes · Total: ${sizeText(totalSize)} [${fmt}]`;
+        $('export-bar').hidden = !state.records.length;
+        $('empty').hidden = !!state.records.length;
+        state.records.forEach(r => {
+          r.sizeElement.textContent = sizeText(currentBlob(r).size);
+          r.saveElement.textContent = `Save ${fmt}`;
+        });
+      }
+      $('format').onchange = refreshStats;
+
+      function resetResults() {
+        if ($('preview').open) $('preview').close();
+        $('preview-image').removeAttribute('src');
+        $('preview-link').removeAttribute('href');
+        state.records.forEach(r => URL.revokeObjectURL(r.previewURL));
+        state.records = [];
+        $('output').replaceChildren();
+        $('status').textContent = 'Awaiting input';
+        $('progress-wrap').hidden = true;
+        $('progress').value = 0;
+        refreshStats();
+      }
+
+      /* Generation Dispatcher */
+      $('generate').onclick = async () => {
+        if (state.busy) return;
+        showFeedback();
+
+        if (typeof window.qrcode !== 'function' || !window.fflate?.zlibSync) {
+          showFeedback('Dependencies unavailable. Please check CDN connectivity.');
+          return;
+        }
+
+        let parsed;
+        try { parsed = parseInput(); } catch (err) {
+          showFeedback(err.message);
+          return;
+        }
+
+        const msgs = [];
+        if (parsed.duplicates) msgs.push(`Purged ${parsed.duplicates} duplicates.`);
+        if (parsed.invalid.length) {
+          msgs.push(`Skipped ${parsed.invalid.length} invalid line(s):`, ...parsed.invalid.slice(0, 10));
+        }
+        if (!parsed.items.length) {
+          showFeedback(['No valid targets found.', ...msgs].join('\n'));
+          return;
+        }
+
+        showFeedback(msgs.join('\n'));
+        resetResults();
+        setBusy(true);
+        state.cancel = false;
+        $('status').textContent = 'Processing';
+        $('progress-wrap').hidden = false;
+        
+        const total = parsed.items.length * 2;
+        const scale = Number($('scale').value);
+        let done = 0;
+        let failed = 0;
+
+        try {
+          outer:
+          for (let i = 0; i < parsed.items.length; i++) {
+            const id = parsed.items[i];
+            const act = activitySection(id, i + 1);
+            let attached = false;
+            for (const type of ['in', 'out']) {
+              await pause();
+              if (state.cancel) break outer;
+              try {
+                const rec = makeRecord(id, i + 1, type, scale);
+                renderRecord(rec, act.grid);
+                if (!attached) {
+                  $('output').appendChild(act.sec);
+                  attached = true;
+                }
+                state.records.push(rec);
+              } catch (err) {
+                failed++;
+                console.error(err);
+              }
+              done++;
+              $('progress').value = (done / total) * 100;
+              $('progress-text').textContent = `${done} / ${total} rendered`;
+              refreshStats();
+            }
+          }
+        } finally {
+          setBusy(false);
+          refreshStats();
+          const fin = state.cancel ? 'Stopped' : failed ? 'Done with errors' : 'Ready';
+          $('status').textContent = fin;
+          $('progress-text').textContent = `${state.records.length} / ${total} codes completed`;
+          notify(`${fin}: ${state.records.length} codes output.`);
+        }
+      };
+
+      $('cancel').onclick = () => {
+        state.cancel = true;
+        $('cancel').disabled = true;
+      };
+
+      function clearAll() {
+        state.session++;
+        $('input').value = '';
+        $('file').value = '';
+        updateLines();
+        showFeedback();
+        resetResults();
+      }
+
+      $('clear').onclick = () => {
+        if (state.busy) return;
+        clearAll();
+        $('input').focus();
+        notify('Cleaned.');
+      };
+
+      $('lock').onclick = () => {
+        if (state.busy) return;
+        clearAll();
+        $('app').hidden = true;
+        $('entry').hidden = false;
+        $('password').value = '';
+        $('password').focus();
+        window.scrollTo(0, 0);
+        notify('Session locked.');
+      };
+
+      $('input').addEventListener('keydown', e => {
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey) && !e.isComposing) {
+          e.preventDefault();
+          $('generate').click();
+        }
+      });
+
+      function appendInput(text) {
+        const ex = $('input').value.trim();
+        const incoming = text.trim();
+        if (!incoming) return;
+        $('input').value = ex ? `${ex}\n${incoming}` : incoming;
+        updateLines();
+        showFeedback();
+        notify('Batch imported.');
+      }
+
+      $('paste').onclick = async () => {
+        if (state.busy) return;
+        try {
+          if (!navigator.clipboard?.readText) throw new Error();
+          const t = await navigator.clipboard.readText();
+          appendInput(t);
+        } catch {
+          $('input').focus();
+          notify('Clipboard permission denied. Paste manually.');
+        }
+      };
+
+      $('import').onclick = () => $('file').click();
+      $('file').onchange = async () => {
+        const f = $('file').files[0];
+        if (!f || state.busy) return;
+        try {
+          if (f.size > 100 * 1024) throw new Error('File exceeds 100KB.');
+          const t = await f.text();
+          appendInput(t.replace(/^\uFEFF/, ''));
+        } catch (err) {
+          showFeedback(err.message || 'File load error.');
+        } finally {
+          $('file').value = '';
+        }
+      };
+
+      $('copy-all').onclick = () => {
+        if (state.records.length && !state.busy) copyText(linksText());
+      };
+
+      $('export-links').onclick = () => {
+        if (!state.records.length || state.busy) return;
+        download(new Blob([linksText()], { type: 'text/plain;charset=utf-8' }), 'SCU_links.txt');
+        notify('Downloaded links.txt');
+      };
+
+      $('zip').onclick = async () => {
+        if (!state.records.length || state.busy) return;
+        if (!window.fflate?.zipSync) {
+          showFeedback('fflate library missing.');
+          return;
+        }
+        setBusy(true, 'export');
+        try {
+          const fmt = $('format').value;
+          const files = {};
+          const folder = 'SCU_QR_Codes/';
+          for (const r of state.records) {
+            const data = new Uint8Array(await currentBlob(r).arrayBuffer());
+            files[folder + filename(r, fmt)] = [data, { level: fmt === 'png' ? 0 : 6 }];
+            await pause();
+          }
+          files[folder + 'links.txt'] = [encoder.encode(linksText()), { level: 6 }];
+          const archive = fflate.zipSync(files, { level: 6 });
+          const d = new Date();
+          const dateStr = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+          download(new Blob([archive], { type: 'application/zip' }), `SCU_QR_${dateStr}_${fmt}.zip`);
+          notify(`Exported ZIP · ${sizeText(archive.length)}`);
+        } catch (err) {
+          console.error(err);
+          showFeedback('ZIP export failed.');
+        } finally {
+          setBusy(false);
+        }
+      };
+    });
+  </script>
+</body>
+</html>
